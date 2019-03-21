@@ -22,6 +22,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/libraries/SPI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/libraries/SPI/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.607428082" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -30,6 +33,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/libraries/SPI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/libraries/SPI/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.774027286" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -38,6 +44,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/OpenHR20/libraries/SPI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ESP32-OpenHR20/libraries/SPI/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.1718583563" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
