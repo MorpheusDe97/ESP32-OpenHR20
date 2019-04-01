@@ -5,6 +5,47 @@
 
 volatile uint8_t sensor[SENSOR_ANZ][PAKET_LEN];
 
+#define RF12LOG(A) Serial.print("[RFM12-LOG] ");Serial.println(A);
+
+typedef union SpiState
+{
+    struct
+    {
+        unsigned OFFS3 :4;
+        unsigned OFFS6 :1;
+        unsigned AFCToggle :1;
+        unsigned ClockRecoveryLocked :1;
+        unsigned DataQuality :1;
+        unsigned Rssi :1;
+        unsigned FifoEmpty :1;
+        unsigned LowBatt :1;
+        unsigned ExternalInterrupt :1;
+        unsigned WakeUp :1;
+        unsigned RegisterUnderrun :1;
+        unsigned PowerOnReset :1;
+        unsigned RegisterInput :1;
+    };
+    uint16_t spiState;
+} SpiState_u;
+
+static void _delay_100us(long count)
+{
+    long w2;
+    for (w2=0;w2<count*10L;w2++)
+    asm volatile ("nop\n nop\n nop\n nop\n");
+}
+
+RF12::RF12()
+{
+    this->spi = new hSPI(this->spiClk);
+    Serial.println("Constructor RF12 called");
+}
+
+RF12::RF12(uint32_t spiClk)
+{
+    this->spiClk = spiClk;
+    this->spi = new hSPI(this->spiClk);
+}
 
 
 void RF12::RFM_init(void)
@@ -107,111 +148,6 @@ void RF12::RFM_init(void)
 }
 
 
-typedef union SpiState
-{
-    struct
-    {
-        unsigned OFFS3 :4;
-        unsigned OFFS6 :1;
-        unsigned AFCToggle :1;
-        unsigned ClockRecoveryLocked :1;
-        unsigned DataQuality :1;
-        unsigned Rssi :1;
-        unsigned FifoEmpty :1;
-        unsigned LowBatt :1;
-        unsigned ExternalInterrupt :1;
-        unsigned WakeUp :1;
-        unsigned RegisterUnderrun :1;
-        unsigned PowerOnReset :1;
-        unsigned RegisterInput :1;
-    };
-    uint16_t spiState;
-} SpiState_u;
-
-RF12::RF12()
-{
-    this->spi = new hSPI(this->spiClk);
-    Serial.println("Constructor RF12 called");
-}
-
-RF12::RF12(uint32_t spiClk)
-{
-    this->spiClk = spiClk;
-    this->spi = new hSPI(this->spiClk);
-}
-
-//TODO: nIRQ anschließen
-void RF12::RFM12_ISR(void)
-{
-    static uint8_t data[32];
-    static uint8_t checksum = 0;
-    static uint8_t bytecount = 0;
-    uint8_t i, sensor_nr, byte;
-
-    digitalWrite(RFM12_SCK, LOW);         // CLK auf L
-    Serial.println("CLKL");
-    digitalWrite(RFM12_SDI, LOW);         // DATA auf L
-    digitalWrite(RFM12_CS, LOW);          // CS auf L
-
-    byte = 0xB0;                                  // Receive FIFO
-
-    for (i = 0; i < 8; i++)                       // Kommando senden
-    {
-        if (byte & 0x80)
-        {
-            digitalWrite(RFM12_SDI, HIGH);        // DATA auf H
-        }
-        else
-        {
-            digitalWrite(RFM12_SDI, LOW);         // DATA auf L
-        }
-        digitalWrite(RFM12_SCK, HIGH);            // Clock auf H
-        Serial.println("CLKH");
-        byte = (byte << 1);                       // naechstes Bit nach oben
-        digitalWrite(RFM12_SCK, LOW);             // Clock auf L
-        Serial.println("CLKL");
-    }
-
-    byte = 0;
-
-    for (char j = 0; j < 8; j++)
-    {
-        byte = (byte << 1);                 // eins höher schieben
-        if (digitalRead(RFM12_SDO) == 1)    // Bit 1?
-        {
-            byte = (byte | 0x01);         // ja
-        }
-        digitalWrite(RFM12_SCK, HIGH);  // CLK auf H
-        Serial.println("CLKH");
-        digitalWrite(RFM12_SCK, LOW);   // CLK auf L
-        Serial.println("CLKL");
-    }
-    digitalWrite(RFM12_CS, HIGH);     // CS auf H
-
-    data[bytecount] = byte;                      // Daten speichern
-    bytecount++;
-    checksum ^= byte;                             // XOR-Pruefsumme
-
-    if (bytecount == PAKET_LEN)                   // fertig?
-    {
-        RF12::RFM12_send_cmd(0xCA81);               // set FIFO mode
-        RF12::RFM12_send_cmd(0xCA83);               // enable FIFO
-
-        if (checksum == 0)                        // Checksumme ok?
-        {
-            sensor_nr = (data[0] & 0x0F) - 1;    // jetzt ab 0
-            if (sensor_nr < SENSOR_ANZ)           // im gueltigen Beeich?
-            {
-                data[bytecount - 1] = 1; // 1 ins letzte Byte (Checksumme) fuer neue Daten
-                memcpy((void *) sensor[sensor_nr], (void const *) data,
-                PAKET_LEN);
-            }
-        }
-        checksum = 0;
-        bytecount = 0;
-    }
-}
-
 void RF12::RFM12_init(void)
 {
     //Serial.println("Initialising RFM12");
@@ -270,13 +206,7 @@ void RF12::RFM12_setBandWidth(unsigned char bandwidth, unsigned char gain,
             0x9400 | ((bandwidth & 7) << 5) | ((gain & 3) << 3) | (drssi & 7));
 }
 
-static void _delay_100us(long count)
-{
-    long w2;
 
-    for (w2=0;w2<count*10L;w2++)
-    asm volatile ("nop\n nop\n nop\n nop\n");
-}
 
 void RF12::RFM12_Ready(unsigned short sending)
 {
@@ -302,59 +232,59 @@ void RF12::decodeSPIState(uint16_t state)
 
     if (spistate.RegisterInput)
     {
-        Serial.println(
+        RF12LOG(
                 "Register-Input: Senderegister ist bereit fuer neue Sendedaten");
     }
     if (spistate.PowerOnReset)
     {
-        Serial.println(
+        RF12LOG(
                 "Power On Reset: Alle Register wurden mit Vorgabewerten geladen / ueberschrieben");
     }
     if (spistate.RegisterUnderrun)
     {
-        Serial.println(
+        RF12LOG(
                 "Die Empfangs-FIFO ist uebergelaufen, weil Daten nicht zuegig genug abgeholt wurden. Die FIFO ist blockiert bis zum naechsten Synchronwort");
     }
     if (spistate.WakeUp)
     {
-        Serial.println("Der Aufweck-Timer ist abgelaufen");
+        RF12LOG("Der Aufweck-Timer ist abgelaufen");
     }
     if (spistate.ExternalInterrupt)
     {
-        Serial.println("Es liegt Low-Pegel am Eingang INT11 vor");
+        RF12LOG("Es liegt Low-Pegel am Eingang INT11 vor");
     }
     if (spistate.LowBatt)
     {
-        Serial.println("Es liegt Unterspannung vor");
+        RF12LOG("Es liegt Unterspannung vor");
     }
     if (spistate.FifoEmpty)
     {
-        Serial.println("Der FIFO-Puffer ist leer");
+        RF12LOG("Der FIFO-Puffer ist leer");
     }
     if (spistate.Rssi)
     {
-        Serial.println("Die Signalstaerke ist ueber dem eingestellten Limit");
+        RF12LOG("Die Signalstaerke ist ueber dem eingestellten Limit");
     }
     if (spistate.DataQuality)
     {
-        Serial.println("Der Ausgang des Datenqualitaetsbewerters");
+        RF12LOG("Der Ausgang des Datenqualitaetsbewerters");
     }
     if (spistate.ClockRecoveryLocked)
     {
-        Serial.println("Die Taktwiederherstellung ist eingerastet");
+        RF12LOG("Die Taktwiederherstellung ist eingerastet");
     }
     if (spistate.AFCToggle)
     {
-        Serial.println(
+        RF12LOG(
                 "Kippt mit jedem AFC-Zyklus, d.h. nachfolgende Bits aendern sich (gemessen wurden etwa 4 kHz, s.u.)");
     }
     if (spistate.OFFS6)
     {
-        Serial.println("MSB = Vorzeichen des AFC-Offsets");
+        RF12LOG("MSB = Vorzeichen des AFC-Offsets");
     }
     if (spistate.OFFS3)
     {
-        Serial.println(
+        RF12LOG(
                 "Letzte 4 Bits vom AFC-Offset. Bei entsprechend begrenzter AFC (Vorgabe) entspricht dies dem tatsaechlichen AFC-Offset. Ansonsten muss man den AFC-Abstimmvorgang durch zyklisches Auslesen des Statusregisters beobachten und die fehlenden Bits extrapolieren");
     }
 }
@@ -432,54 +362,5 @@ void RF12::RFM12_RXData(unsigned char *buffer, uint8_t size)
         }
         this->spi->transmit16(0x8208);// RX off
     }
-}
-
-
-void RF12::RFM12_send_cmd(unsigned int command)
-{
-    unsigned char i;
-    digitalWrite(RFM12_CS, LOW);           // CS auf L
-    digitalWrite(RFM12_SCK, LOW);    // CLK auf H
-    SpiState_u state;
-    for (i = 0; i < 16; i++)
-    {
-        if (command & 0x8000)
-        {
-            digitalWrite(RFM12_SDI, HIGH);  // DATA auf H
-        }
-        else
-        {
-            digitalWrite(RFM12_SDI, LOW);   // DATA auf L
-        }
-        digitalWrite(RFM12_SCK, HIGH);    // CLK auf H
-        digitalWrite(RFM12_SCK, HIGH);     // CLK auf H
-        command = (command << 1);           // naechstes Bit nach oben
-    }
-    digitalWrite(RFM12_CS, LOW);           // CS auf L
-}
-
-uint16_t RF12::RFM12_read_status(void)
-{
-    uint16_t statusword = 0;
-    unsigned char i = 0;
-
-    digitalWrite(RFM12_SCK, LOW);       // CLK auf L
-    digitalWrite(RFM12_SDI, LOW);       // DATA auf L
-
-    digitalWrite(RFM12_CS, LOW);        // CS auf L
-
-    for (i = 0; i < 16; i++)
-    {
-        statusword = (statusword << 1);           // eins höher schieben
-        if (digitalRead(RFM12_SDO) == 1) // Bit 1?
-        {
-            statusword = (statusword | 0x0001);   // ja
-        }
-        digitalWrite(RFM12_SCK, HIGH);  // CLK auf H
-        digitalWrite(RFM12_SCK, LOW);   // CLK auf L
-    }
-    digitalWrite(RFM12_CS, HIGH);         // CS auf H
-
-    return statusword;
 }
 
