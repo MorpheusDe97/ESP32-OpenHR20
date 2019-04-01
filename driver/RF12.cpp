@@ -22,8 +22,8 @@ void RF12::RFM_init(void)
 //    sbi(RFM_NSEL_DDR,RFM_NSEL_BITPOS);  // pin is output // TP20, PB2
 
 
-    //RFM_READ_STATUS();
-
+    //READ_STATUS
+    this->spi->transmit16(0x0000);
     // 1. Configuration Setting Command
     this->spi->transmit16(
         RFM_CONFIG_EL           |
@@ -270,17 +270,26 @@ void RF12::RFM12_setBandWidth(unsigned char bandwidth, unsigned char gain,
             0x9400 | ((bandwidth & 7) << 5) | ((gain & 3) << 3) | (drssi & 7));
 }
 
+static void _delay_100us(long count)
+{
+    long w2;
+
+    for (w2=0;w2<count*10L;w2++)
+    asm volatile ("nop\n nop\n nop\n nop\n");
+}
+
 void RF12::RFM12_Ready(unsigned short sending)
 {
     if (sending)
     {
-        uint16_t timeout = 1000;
+        uint16_t timeout = 10;
         digitalWrite(RFM12_SDI, LOW);
         digitalWrite(RFM12_CS, LOW);
+        asm volatile ("nop");
         while (!digitalRead(RFM12_SDO) && timeout)
         {
             timeout--;
-            delayMicroseconds(100);
+            _delay_100us(1);
         }
     }
 }
@@ -357,7 +366,6 @@ void RF12::RFM12_TXData(unsigned char *buffer, uint8_t size)
 
     this->spi->transmit16(0x8208);         // turn on crystal
     this->spi->transmit16(0x0000);         // receive status
-    this->spi->transmit16(0x0000);         // receive status
 
     this->spi->transmit16(0x8238);         // TX on
 
@@ -385,6 +393,7 @@ void RF12::RFM12_TXData(unsigned char *buffer, uint8_t size)
 //            rf12_trans(0xB800|(pgm_read_byte(&hamminge[*data&15])));    //low-byte
 //            data++;
 //        #else
+        //this->spi->transmit16(0xB800 | (*buffer++));
         this->spi->transmit16(0xB800 | (*buffer++));
         //#endif
     }
@@ -408,6 +417,7 @@ void RF12::RFM12_RXData(unsigned char *buffer, uint8_t size)
         this->spi->transmit16(0x82C8);// RX on
         //this->spi->transmit16(0xCA83);
         this->decodeSPIState(this->spi->transmit16(0x0000));       // receive status
+
         /*do
         {
           state.spiState = this->spi->transmit16(0x0000);       // receive status
@@ -417,6 +427,7 @@ void RF12::RFM12_RXData(unsigned char *buffer, uint8_t size)
         for(i = 0; i<size; i++)
         {
            this->spi->transmit16(0x0000);       // receive status
+           while(digitalRead(RFM12_SDO) == 0);
             *buffer++ = this->spi->transmit16(0xB000);
         }
         this->spi->transmit16(0x8208);// RX off
