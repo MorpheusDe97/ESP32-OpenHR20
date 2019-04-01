@@ -4,11 +4,11 @@ This project follows the goal of controlling Honeywell-Thermostats with OpenHR20
 Important: This project is a work in progress! Currently, the transmitting and receiving of the RFM12B-Module won't work as expected.
 
 
-#Architecture 
+##Architecture 
 ![alt Architecture](Architecture.png)
 
 
-#Todo-List: 
+##Todo-List: 
 Currently, the modules have the following state: 
  * SPI-driver: Completed
  * RFM12-driver: Completed, but still has several bugs
