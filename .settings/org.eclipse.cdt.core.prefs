@@ -415,7 +415,7 @@ environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.PACKAGE_
 environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.PACKAGE_ID/value=Sloeber
 environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.PROJECT_NAME/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.PROJECT_NAME/operation=replace
-environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.PROJECT_NAME/value=OpenHR20
+environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.PROJECT_NAME/value=ESP32-OpenHR20
 environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.SELECTED.PLATFORM/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.SELECTED.PLATFORM/operation=replace
 environment/project/io.sloeber.core.toolChain.release.1548355411/JANTJE.SELECTED.PLATFORM/value=C\:/Users/labor/Desktop/ESP32-HR20-Projekt/Sloeber/arduino-esp32-master

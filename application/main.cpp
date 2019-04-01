@@ -150,30 +150,31 @@ void setup() {
     Serial.println("Constructor called");
 
     // delay(1000);
-
+    rf->RFM_init();
     rf->RFM12_init();
-    delay(500);
+    delay(1000);
     rf->RFM12_init();
     delay(1000);
     rf->RFM12_init();
     Serial.println("Init called");
 
-    rf->RFM12_setFreq(RF12FREQ(868.92));
+   /* rf->RFM12_setFreq(RF12FREQ(868.34));
     rf->RFM12_setBandWidth(4, 1, 4);// 200kHz Bandbreite, -6dB Verstärkung, DRSSI threshold: -79dBm
     rf->RFM12_setBaud(19200); // 19200 baud
     rf->RFM12_setPower(0, 6); // 1mW Ausgangangsleistung, 120kHz Frequenzshift
-
+*/
 
 
 }
 
-unsigned char test[] = "123456789";
+unsigned char test[8];
 // the loop function runs over and over again until power down or reset
 void loop() {
 //    hspi->transmit16(0x1234);  // Empfänger ein, Clock Out aus
 //    delay(200);
 
-    rf->RFM12_TXData(test, 9);
-    delay(200);
+    rf->RFM12_RXData(test, 8);
+    Serial.println(( long unsigned int)test, BIN);
+    delay(500);
 }
 
