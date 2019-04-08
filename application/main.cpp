@@ -15,6 +15,7 @@
 #include "Arduino.h"
 #include "../driver/hSPI.h"
 #include "../driver/RF12.h"
+#include "HR20.h"
 
 static const int spiClk = 10000000; // 10 MHz
 
@@ -33,6 +34,15 @@ void setup() {
 
     rf->RFM_init();
     Serial.println("Init called");
+    HR20 hr20;
+    hr20.getBatt();
+    hr20.getClock();
+    hr20.getActualTemperature();
+
+//    getActualTemperature();
+//    decodeResponse("?TEMP"); //ERROR
+//    decodeResponse("@VER-2.05.99"); //Valid?
+//    decodeResponse("$BATT-3.1,OK"); //Valid?
 
 }
 

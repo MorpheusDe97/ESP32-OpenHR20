@@ -1,9 +1,5 @@
 #include "RF12.h"
 
-#define  PAKET_LEN       24
-#define  SENSOR_ANZ       6
-
-volatile uint8_t sensor[SENSOR_ANZ][PAKET_LEN];
 
 #define RF12LOG(A) Serial.print("[RFM12-LOG] ");Serial.println(A);
 
