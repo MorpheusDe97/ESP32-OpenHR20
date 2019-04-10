@@ -35,7 +35,7 @@ void setup() {
     rf->RFM_init();
     Serial.println("Init called");
     HR20 hr20;
-    hr20.getBatt();
+   // hr20.getBatt();
     hr20.getClock();
     hr20.getActualTemperature();
 
